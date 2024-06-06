@@ -27,7 +27,7 @@ func (u *MediaService) FindAll() ([]*entity.Media, error) {
 	return result, nil
 }
 
-func (u *MediaService) Upload(ruleSlug, fileName string) (string, error) {
+func (u *MediaService) Upload(ruleSlug, fileName string, isCommit bool) (string, error) {
 	tempFilePath := common.TemporaryFolder + "/" + fileName
 
 	rule, err := u.repo.Rule.FindBySlug(ruleSlug)
@@ -94,6 +94,7 @@ func (u *MediaService) Upload(ruleSlug, fileName string) (string, error) {
 		FileSize:           fileMetaData.FileSize,
 		FilePath:           mediaLink,
 		FilePathFromDriver: filePathFromDriver,
+		IsCommit:           isCommit,
 	})
 
 	if err != nil {

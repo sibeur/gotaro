@@ -2,6 +2,7 @@ package handler
 
 import (
 	"io"
+	"log"
 	"os"
 
 	"github.com/sibeur/gotaro/core/common"
@@ -48,6 +49,13 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
 
+	isCommit := false
+	isCommitString := c.FormValue("commit")
+
+	if isCommitString != "" && isCommitString == "true" {
+		isCommit = true
+	}
+
 	// Open the uploaded file
 	src, err := file.Open()
 	if err != nil {
@@ -63,6 +71,13 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 	}
 	defer dst.Close()
 
+	defer func() {
+		err := os.Remove(tempFilePath)
+		if err != nil {
+			log.Printf("Failed to delete temp file %v", tempFilePath)
+		}
+	}()
+
 	// Copy the uploaded file to the destination file
 	if _, err := io.Copy(dst, src); err != nil {
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
@@ -70,7 +85,7 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 
 	ruleSlug := c.Params("slug")
 
-	url, err := h.svc.Media.Upload(ruleSlug, file.Filename)
+	url, err := h.svc.Media.Upload(ruleSlug, file.Filename, isCommit)
 	if err != nil {
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
