@@ -27,6 +27,15 @@ func (u *DriverService) FindAll() ([]*entity.Driver, error) {
 	return result, nil
 }
 
+func (u *DriverService) FindAllSimple() ([]*entity.Driver, error) {
+	result, err := u.repo.Driver.FindAllSimple()
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (u *DriverService) Create(driver *entity.Driver) error {
 	existingDriver, err := u.repo.Driver.FindBySlug(driver.Slug)
 	if err == nil && existingDriver != nil {

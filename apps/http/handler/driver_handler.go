@@ -34,7 +34,7 @@ func (h *DriverHandler) Router() {
 }
 
 func (h *DriverHandler) findAllDrivers(c *fiber.Ctx) error {
-	drivers, err := h.svc.Driver.FindAll()
+	drivers, err := h.svc.Driver.FindAllSimple()
 	if err != nil {
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}

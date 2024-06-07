@@ -11,6 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type DriverRepository struct {
@@ -26,6 +27,30 @@ func (u *DriverRepository) FindAll() ([]*entity.Driver, error) {
 	ctx := context.TODO()
 	var drivers []*entity.Driver
 	cur, err := u.db.Collection(entity.Driver{}.GetCollName()).Find(ctx, bson.M{"deleted_at": nil})
+	if err != nil {
+		log.Printf("Error finding drivers: %v", err)
+		return nil, err
+	}
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var driver entity.Driver
+		err := cur.Decode(&driver)
+		if err != nil {
+			log.Printf("Error decoding driver: %v", err)
+			return nil, err
+		}
+		drivers = append(drivers, &driver)
+	}
+	return drivers, nil
+}
+
+func (u *DriverRepository) FindAllSimple() ([]*entity.Driver, error) {
+	ctx := context.TODO()
+	var drivers []*entity.Driver
+	projection := bson.M{"_id": 1, "slug": 1, "name": 1, "type": 1}
+	cur, err := u.db.Collection(entity.Driver{}.GetCollName()).Find(ctx, bson.M{"deleted_at": nil}, &options.FindOptions{
+		Projection: projection,
+	})
 	if err != nil {
 		log.Printf("Error finding drivers: %v", err)
 		return nil, err
