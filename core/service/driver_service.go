@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 
 	"github.com/sibeur/gotaro/core/common"
 	driver_lib "github.com/sibeur/gotaro/core/common/driver"
@@ -45,13 +46,7 @@ func (u *DriverService) Create(driver *entity.Driver) error {
 	if err != nil {
 		return err
 	}
-
-	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.GetDriverConfig())
-	if err != nil {
-		return err
-	}
-	u.DriverManager.AddDriver(driverClient)
-
+	go u.updateDriverClient(driver.Slug)
 	return nil
 }
 
@@ -60,21 +55,20 @@ func (u *DriverService) Update(driver *entity.Driver) error {
 	if err != nil {
 		return err
 	}
-	driverConfig := make(map[string]any)
-	switch driver.Type {
-	case uint32(driver_lib.GCSDriverType):
-		gcsDriverConfig := driver.DriverConfig.(*driver_lib.GCSDriverConfig)
-		driverConfig["project_id"] = gcsDriverConfig.ProjectID
-		driverConfig["bucket_name"] = gcsDriverConfig.BucketName
-		driverConfig["default_folder"] = gcsDriverConfig.DefaultFolder
-		driverConfig["service_account"] = gcsDriverConfig.ServiceAccount
-	}
-	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driverConfig)
+	go u.updateDriverClient(driver.Slug)
+	return nil
+}
+
+func (u *DriverService) updateDriverClient(slug string) {
+	driver, err := u.repo.Driver.FindBySlug(slug)
 	if err != nil {
-		return err
+		log.Printf("Error updating driver: %v", err)
+	}
+	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.GetDriverConfig())
+	if err != nil {
+		log.Printf("Error updating driver: %v", err)
 	}
 	u.DriverManager.AddDriver(driverClient)
-	return nil
 }
 
 func (u *DriverService) Delete(slug string) error {
