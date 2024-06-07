@@ -1,10 +1,5 @@
 package driver
 
-import (
-	"log"
-	"os"
-)
-
 type DriverClientUseCase interface {
 	GetName() string
 	GetType() StorageDriverType
@@ -56,13 +51,6 @@ func (dc *DriverClient) GetDriver() any {
 }
 
 func (dc *DriverClient) UploadFile(tempFilePath string, targetFilePath string) (string, error) {
-	defer func() {
-		err := os.Remove(tempFilePath)
-		if err != nil {
-			log.Printf("Failed to delete temp file %v", tempFilePath)
-		}
-	}()
-
 	switch dc.driverType {
 	case GCSDriverType:
 		return dc.driver.(GCPDriverClientUseCase).UploadFile(tempFilePath, targetFilePath)

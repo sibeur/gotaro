@@ -25,5 +25,8 @@ FROM scratch
 # Copy the binary from builder stage
 COPY --from=builder /app/main /main
 
+# Copy SSL certificates from builder stage
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
 # Command to run the executable
 CMD ["/main"]

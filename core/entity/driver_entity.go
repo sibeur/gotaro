@@ -55,6 +55,11 @@ func (col *Driver) GetDefaultFolder() string {
 	return folder
 }
 
+func (col *Driver) GetDriverConfig() map[string]any {
+	return common.DToMap(col.DriverConfig.(primitive.D))
+
+}
+
 func (col *Driver) GetFilePathFromDriver(targetFilePath string) string {
 	switch col.Type {
 	case uint32(driver.GCSDriverType):

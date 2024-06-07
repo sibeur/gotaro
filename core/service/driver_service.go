@@ -7,7 +7,6 @@ import (
 	driver_lib "github.com/sibeur/gotaro/core/common/driver"
 	"github.com/sibeur/gotaro/core/entity"
 	"github.com/sibeur/gotaro/core/repository"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type DriverService struct {
@@ -38,7 +37,7 @@ func (u *DriverService) Create(driver *entity.Driver) error {
 		return err
 	}
 
-	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.DriverConfig.(map[string]any))
+	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.GetDriverConfig())
 	if err != nil {
 		return err
 	}
@@ -93,7 +92,7 @@ func (u *DriverService) LoadDriverManager() error {
 	}
 
 	for _, driver := range drivers {
-		driverConfigJSON := common.DToMap(driver.DriverConfig.(primitive.D))
+		driverConfigJSON := driver.GetDriverConfig()
 		driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driverConfigJSON)
 		if err != nil {
 			return err
