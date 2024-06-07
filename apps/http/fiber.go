@@ -73,5 +73,7 @@ func (f *FiberApp) Run() {
 	f.driverHandler.Router()
 	f.mediaHandler.Router()
 	f.afterMiddlewares()
-	f.Instance.Listen(":3000")
+	if err := f.Instance.Listen(":3000"); err != nil {
+		panic(err)
+	}
 }
