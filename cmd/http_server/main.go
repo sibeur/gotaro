@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	app_http "github.com/sibeur/gotaro/apps/http"
 	"github.com/sibeur/gotaro/core/common"
@@ -46,6 +47,18 @@ func main() {
 	temporaryFolder := common.TemporaryFolder
 	if err := common.CreateFolder(temporaryFolder); err != nil {
 		panic(err)
+	}
+
+	// generate superadmin
+	clientKey, secretKey, err := service.ApiClient.GenerateFirstSuperAdmin()
+	if err != nil {
+		if err.Error() == common.ErrAPIClientAlreadyExistMsg {
+			fmt.Printf("Already exists super admin with ClientKey: %s \n", clientKey)
+		} else {
+			panic(err)
+		}
+	} else {
+		fmt.Printf("ClientKey: %s\nSecretKey: %s\n", clientKey, secretKey)
 	}
 
 	// start http app

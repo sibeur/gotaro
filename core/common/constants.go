@@ -18,5 +18,22 @@ const (
 	ErrFileSizeExceededMsg  = "File size exceeded"
 	ErrFileMimeInvalidMsg   = "File mime invalid"
 
+	// API Client error messages
+	ErrAPIClientAlreadyExistMsg = "API client already exist"
+	ErrAPIClientNotFoundMsg     = "API client not found"
+
+	// Auth error messages
+	ErrAuthenticationFailedMsg = "API Key or Secret Key invalid."
+	ErrJWTSecretNotFoundMsg    = "Secret JWT not defined."
+	ErrJWTTokenInvalidMsg      = "Token invalid."
+	ErrUnauthorizedMsg         = "Unauthorized."
+
 	TemporaryFolder = "tmp"
+
+	APIClientSuperAdminScope = "super-admin"
+	APIClientUploaderScope   = "uploader"
+
+	// JWT Issuer
+	JWTIssuerAccessToken  = "gotaro-access-token"
+	JWTIssuerRefreshToken = "gotaro-refresh-token"
 )

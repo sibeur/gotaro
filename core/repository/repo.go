@@ -7,15 +7,19 @@ import (
 )
 
 type Repository struct {
-	Driver *DriverRepository
-	Rule   *RuleRepository
-	Media  *MediaRepository
+	Driver    *DriverRepository
+	Rule      *RuleRepository
+	Media     *MediaRepository
+	APIClient *ApiClientRepository
+	Auth      *AuthRepository
 }
 
 func NewRepository(mongoDB *mongo.Database, cache core_cache.CacheUseCase) *Repository {
 	return &Repository{
-		Driver: NewDriverRepository(mongoDB, cache),
-		Rule:   NewRuleRepository(mongoDB, cache),
-		Media:  NewMediaRepository(mongoDB, cache),
+		Driver:    NewDriverRepository(mongoDB, cache),
+		Rule:      NewRuleRepository(mongoDB, cache),
+		Media:     NewMediaRepository(mongoDB, cache),
+		APIClient: NewApiClientRepository(mongoDB, cache),
+		Auth:      NewAuthRepository(cache),
 	}
 }

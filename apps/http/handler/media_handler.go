@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/sibeur/gotaro/apps/http/handler/middleware"
 	"github.com/sibeur/gotaro/core/common"
 	"github.com/sibeur/gotaro/core/service"
 
@@ -24,8 +25,8 @@ func NewMediaHandler(fiberInstance *fiber.App, svc *service.Service) *MediaHandl
 }
 
 func (h *MediaHandler) Router() {
-	medias := h.fiberInstance.Group("/v1").Group("/medias")
-	medias.Post("/:slug", h.uploadMedia)
+	medias := h.fiberInstance.Group("/v1").Group("/medias", middleware.VerifyAuth(h.svc))
+	medias.Post("/:slug", middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope, common.APIClientUploaderScope}), h.uploadMedia)
 }
 
 func (h *MediaHandler) findAllMedias(c *fiber.Ctx) error {

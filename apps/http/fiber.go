@@ -20,6 +20,7 @@ type FiberApp struct {
 	ruleHandler   *handler.RuleHandler
 	driverHandler *handler.DriverHandler
 	mediaHandler  *handler.MediaHandler
+	authHandlerV1 *handler.AuthHandlerV1
 }
 
 // NewFiberApp creates a new instance of FiberApp.
@@ -33,6 +34,7 @@ func NewFiberApp(service *service.Service) *FiberApp {
 		ruleHandler:   handler.NewRuleHandler(instance, service),
 		driverHandler: handler.NewDriverHandler(instance, service),
 		mediaHandler:  handler.NewMediaHandler(instance, service),
+		authHandlerV1: handler.NewAuthHandlerV1(instance, service),
 	}
 }
 
@@ -69,6 +71,7 @@ func (f *FiberApp) Run() {
 		panic("Error")
 		return c.SendString("Hello, World!")
 	})
+	f.authHandlerV1.Router()
 	f.ruleHandler.Router()
 	f.driverHandler.Router()
 	f.mediaHandler.Router()

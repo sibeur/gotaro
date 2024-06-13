@@ -49,6 +49,7 @@ require (
 	github.com/go-sql-driver/mysql v1.8.0 // indirect
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.2 // indirect
 	github.com/gofiber/fiber/v2 v2.52.2 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect

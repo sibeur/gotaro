@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/sibeur/gotaro/apps/http/handler/dto"
+	"github.com/sibeur/gotaro/apps/http/handler/middleware"
 	"github.com/sibeur/gotaro/core/common"
 	"github.com/sibeur/gotaro/core/entity"
 	"github.com/sibeur/gotaro/core/service"
@@ -22,7 +23,7 @@ func NewRuleHandler(fiberInstance *fiber.App, svc *service.Service) *RuleHandler
 }
 
 func (h *RuleHandler) Router() {
-	rules := h.fiberInstance.Group("/v1").Group("/rules")
+	rules := h.fiberInstance.Group("/v1").Group("/rules", middleware.VerifyAuth(h.svc), middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope}))
 	rules.Get("/", h.findAllRules)
 	rules.Post("/", h.createRule)
 	rules.Get("/:slug", h.findRuleBySlug)

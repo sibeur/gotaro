@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/sibeur/gotaro/apps/http/handler/dto"
+	"github.com/sibeur/gotaro/apps/http/handler/middleware"
 	"github.com/sibeur/gotaro/core/common"
 	"github.com/sibeur/gotaro/core/common/driver"
 	"github.com/sibeur/gotaro/core/entity"
@@ -25,7 +26,9 @@ func NewDriverHandler(fiberInstance *fiber.App, svc *service.Service) *DriverHan
 }
 
 func (h *DriverHandler) Router() {
-	driver := h.fiberInstance.Group("/v1").Group("/drivers")
+	driver := h.fiberInstance.
+		Group("/v1").
+		Group("/drivers", middleware.VerifyAuth(h.svc), middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope}))
 	driver.Get("/", h.findAllDrivers)
 	driver.Get("/:slug", h.findDriverBySlug)
 	driver.Post("/", h.createDriver)
