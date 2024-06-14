@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
+	go_cache "github.com/sibeur/go-cache"
 	"github.com/sibeur/gotaro/core/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,10 +14,10 @@ import (
 
 type MediaRepository struct {
 	db    *mongo.Database
-	cache core_cache.CacheUseCase
+	cache go_cache.Cache
 }
 
-func NewMediaRepository(db *mongo.Database, cache core_cache.CacheUseCase) *MediaRepository {
+func NewMediaRepository(db *mongo.Database, cache go_cache.Cache) *MediaRepository {
 	return &MediaRepository{db: db, cache: cache}
 }
 

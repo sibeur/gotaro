@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	go_cache "github.com/sibeur/go-cache"
 	"github.com/sibeur/gotaro/core/common"
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
 	"github.com/sibeur/gotaro/core/entity"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,10 +15,10 @@ import (
 )
 
 type AuthRepository struct {
-	cache core_cache.CacheUseCase
+	cache go_cache.Cache
 }
 
-func NewAuthRepository(cache core_cache.CacheUseCase) *AuthRepository {
+func NewAuthRepository(cache go_cache.Cache) *AuthRepository {
 	return &AuthRepository{cache: cache}
 }
 

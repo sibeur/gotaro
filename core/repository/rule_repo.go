@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
+	go_cache "github.com/sibeur/go-cache"
 	"github.com/sibeur/gotaro/core/entity"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,10 +15,10 @@ import (
 
 type RuleRepository struct {
 	db    *mongo.Database
-	cache core_cache.CacheUseCase
+	cache go_cache.Cache
 }
 
-func NewRuleRepository(db *mongo.Database, cache core_cache.CacheUseCase) *RuleRepository {
+func NewRuleRepository(db *mongo.Database, cache go_cache.Cache) *RuleRepository {
 	return &RuleRepository{db: db, cache: cache}
 }
 

@@ -7,8 +7,8 @@ import (
 	core_repository "github.com/sibeur/gotaro/core/repository"
 	core_service "github.com/sibeur/gotaro/core/service"
 
+	go_cache "github.com/sibeur/go-cache"
 	app_pubsub "github.com/sibeur/gotaro/apps/pubsub"
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
 	"github.com/sibeur/gotaro/core/common/driver"
 
 	"github.com/joho/godotenv"
@@ -27,7 +27,7 @@ func main() {
 	defer mongoDB.Client().Disconnect(context.Background())
 
 	//load cache
-	cache := core_cache.NewCache()
+	cache := go_cache.NewCache()
 
 	// load driver manager
 	driverManager := driver.NewDriverManager()

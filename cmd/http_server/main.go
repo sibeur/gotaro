@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	go_cache "github.com/sibeur/go-cache"
 	app_http "github.com/sibeur/gotaro/apps/http"
 	"github.com/sibeur/gotaro/core/common"
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
 	"github.com/sibeur/gotaro/core/common/driver"
 	core_db "github.com/sibeur/gotaro/core/db"
 	core_repository "github.com/sibeur/gotaro/core/repository"
@@ -28,7 +28,7 @@ func main() {
 	defer mongoDB.Client().Disconnect(context.Background())
 
 	//load cache
-	cache := core_cache.NewCache()
+	cache := go_cache.NewCache()
 
 	// load driver manager
 	driverManager := driver.NewDriverManager()

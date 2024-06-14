@@ -1,7 +1,7 @@
 package repository
 
 import (
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
+	go_cache "github.com/sibeur/go-cache"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -14,7 +14,7 @@ type Repository struct {
 	Auth      *AuthRepository
 }
 
-func NewRepository(mongoDB *mongo.Database, cache core_cache.CacheUseCase) *Repository {
+func NewRepository(mongoDB *mongo.Database, cache go_cache.Cache) *Repository {
 	return &Repository{
 		Driver:    NewDriverRepository(mongoDB, cache),
 		Rule:      NewRuleRepository(mongoDB, cache),

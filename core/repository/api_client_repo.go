@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	core_cache "github.com/sibeur/gotaro/core/common/cache"
+	go_cache "github.com/sibeur/go-cache"
 	"github.com/sibeur/gotaro/core/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,10 +13,10 @@ import (
 
 type ApiClientRepository struct {
 	db    *mongo.Database
-	cache core_cache.CacheUseCase
+	cache go_cache.Cache
 }
 
-func NewApiClientRepository(db *mongo.Database, cache core_cache.CacheUseCase) *ApiClientRepository {
+func NewApiClientRepository(db *mongo.Database, cache go_cache.Cache) *ApiClientRepository {
 	return &ApiClientRepository{db: db, cache: cache}
 }
 
