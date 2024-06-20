@@ -1,5 +1,11 @@
 package driver
 
+import (
+	"fmt"
+
+	"github.com/gofiber/fiber/v2/log"
+)
+
 type DriverManagerUseCase interface {
 	GetDriver(driverName string) DriverClientUseCase
 	AddDriver(driver DriverClientUseCase) error
@@ -22,6 +28,7 @@ func (dm *DriverManager) GetDriver(driverName string) DriverClientUseCase {
 }
 
 func (dm *DriverManager) AddDriver(driver DriverClientUseCase) error {
+	log.Info(fmt.Sprintf("Loading driver %v, type: %v", driver.GetName(), driver.GetTypeString()))
 	dm.driverClients[driver.GetName()] = driver
 	return nil
 }

@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/sibeur/gotaro/core/common"
@@ -16,6 +17,7 @@ type Driver struct {
 	Slug         string    `bson:"slug,omitempty" json:"slug,omitempty"`
 	Name         string    `bson:"name,omitempty" json:"name,omitempty"`
 	Type         uint32    `bson:"type,omitempty" json:"type,omitempty"`
+	IsPublic     bool      `bson:"is_public,omitempty" json:"is_public,omitempty"`
 	DriverConfig any       `bson:"driver_config,omitempty" json:"driver_config,omitempty"`
 }
 
@@ -29,16 +31,18 @@ func (col *Driver) ToJSON() common.GotaroMap {
 		"slug":          col.Slug,
 		"name":          col.Name,
 		"type":          col.Type,
+		"is_public":     col.IsPublic,
 		"driver_config": common.DToMap(col.DriverConfig.(primitive.D)),
 	}
 }
 
 func (col *Driver) ToJSONSimple() common.GotaroMap {
 	return common.GotaroMap{
-		"id":   col.ID,
-		"slug": col.Slug,
-		"name": col.Name,
-		"type": col.Type,
+		"id":        col.ID,
+		"slug":      col.Slug,
+		"name":      col.Name,
+		"type":      col.Type,
+		"is_public": col.IsPublic,
 	}
 }
 
@@ -56,7 +60,17 @@ func (col *Driver) GetDefaultFolder() string {
 }
 
 func (col *Driver) GetDriverConfig() map[string]any {
-	return common.DToMap(col.DriverConfig.(primitive.D))
+
+	reflectDriverConfig := reflect.ValueOf(col.DriverConfig)
+	if reflectDriverConfig.Type().String() == "*driver.GCSDriverConfig" {
+		return col.DriverConfig.(*driver.GCSDriverConfig).ToMap()
+	}
+
+	if reflectDriverConfig.Type().String() == "primitive.D" {
+		return common.DToMap(col.DriverConfig.(primitive.D))
+	}
+
+	return col.DriverConfig.(map[string]any)
 
 }
 

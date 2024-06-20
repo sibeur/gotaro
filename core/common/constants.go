@@ -1,5 +1,7 @@
 package common
 
+import "time"
+
 const (
 	ErrValidationMsg  = "Validation error"
 	ErrSlugInvalidMsg = "Slug is invalid"
@@ -8,6 +10,11 @@ const (
 	ErrDriverAlreadyExistMsg   = "Driver already exist"
 	ErrDriverNotFoundMsg       = "Driver not found"
 	ErrDriverClientNotFoundMsg = "Driver client not found"
+	ErrDriverNotInitiate       = "Driver not initiate"
+
+	// GCP Driver error message
+	ErrBucketNotExistMsg               = "Bucket not exist"
+	ErrNotHaveStorageAdminPrivilageMsg = "Not have storage admin privilage"
 
 	// Rule error messages
 	ErrRuleAlreadyExistMsg = "Rule already exist"
@@ -15,6 +22,7 @@ const (
 
 	// Media error messages
 	ErrMediaAlreadyExistMsg = "Media already exist"
+	ErrMediaNotFoundMsg     = "Media not found"
 	ErrFileSizeExceededMsg  = "File size exceeded"
 	ErrFileMimeInvalidMsg   = "File mime invalid"
 
@@ -28,12 +36,22 @@ const (
 	ErrJWTTokenInvalidMsg      = "Token invalid."
 	ErrUnauthorizedMsg         = "Unauthorized."
 
-	TemporaryFolder = "tmp"
+	// Media default config
+	TemporaryFolder     = "tmp"
+	DefaultSignedURLTTL = time.Minute * 10
 
+	// API Client default scope
 	APIClientSuperAdminScope = "super-admin"
 	APIClientUploaderScope   = "uploader"
 
 	// JWT Issuer
 	JWTIssuerAccessToken  = "gotaro-access-token"
 	JWTIssuerRefreshToken = "gotaro-refresh-token"
+
+	// Cache Keys
+	CacheGetMediaKey       = "gotaro:media:%s:%s"
+	CacheMediaSignedUrlKey = "gotaro:media:signedUrl:%s:%s"
+
+	// Cache TTL
+	DefaultGetMediaCacheTTL = 60 * 10
 )

@@ -2,11 +2,15 @@ package driver
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/sibeur/gotaro/core/common"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -18,6 +22,10 @@ type GCPDriverClientUseCase interface {
 	GetDriverConfig() *GCSDriverConfig
 	GetObjectNames() ([]string, error)
 	UploadFile(filePath string, targetFilePath string) (string, error)
+	GetSignedUrl(filePath string) (string, error)
+	IsStorageAssetPublic() (bool, error)
+	IsStorageBucketExist() (bool, error)
+	IsHasStorageAdminPrivilage() (bool, error)
 	Close()
 }
 
@@ -99,7 +107,88 @@ func (gcp *GCPDriverClient) UploadFile(filePath string, targetFilePath string) (
 		return "", err
 	}
 
-	return attrs.MediaLink, nil
+	url := attrs.MediaLink
+
+	isPublic, _ := gcp.IsStorageAssetPublic()
+	if !isPublic {
+		signedUrl, _ := gcp.GetSignedUrl(targetFilePath)
+		url = signedUrl
+	}
+
+	return url, nil
+}
+
+func (gcp *GCPDriverClient) GetSignedUrl(filePath string) (string, error) {
+	opts := &storage.SignedURLOptions{
+		Scheme:  storage.SigningSchemeV4,
+		Method:  "GET",
+		Expires: time.Now().Add(common.DefaultSignedURLTTL),
+	}
+	signedUrl, err := gcp.client.Bucket(gcp.driverConfig.BucketName).SignedURL(filePath, opts)
+	if err != nil {
+		return "", err
+	}
+	return signedUrl, nil
+}
+
+func (gcp *GCPDriverClient) IsStorageAssetPublic() (bool, error) {
+	ctx := context.Background()
+
+	bucketName := gcp.driverConfig.BucketName
+	bucket := gcp.client.Bucket(bucketName)
+
+	// Check if the bucket is public
+	attrs, err := bucket.Attrs(ctx)
+	if err != nil {
+		return false, err
+	}
+	isPublic := false
+	for _, entity := range attrs.ACL {
+		if entity.Entity == "allUsers" && entity.Role == storage.RoleReader {
+			isPublic = true
+			break
+		}
+	}
+	return isPublic, nil
+}
+
+func (gcp *GCPDriverClient) IsStorageBucketExist() (bool, error) {
+
+	ctx := context.Background()
+
+	bucketName := gcp.driverConfig.BucketName
+	_, err := gcp.client.Bucket(bucketName).Attrs(ctx)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (gcp *GCPDriverClient) IsHasStorageAdminPrivilage() (bool, error) {
+
+	ctx := context.Background()
+
+	bucketName := gcp.driverConfig.BucketName
+
+	bucket := gcp.client.Bucket(bucketName)
+
+	// Check if the bucket is public
+	attrs, err := bucket.Attrs(ctx)
+	if err != nil {
+		if errors.Is(err, storage.ErrBucketNotExist) {
+			fmt.Println("IsHasStorageAdminPrivilage error", err)
+			return false, errors.New(common.ErrBucketNotExistMsg)
+		}
+		return false, err
+	}
+	isHasPrivilage := false
+	for _, entity := range attrs.ACL {
+		if entity.Entity == "allUsers" && entity.Role == storage.RoleOwner {
+			isHasPrivilage = true
+			break
+		}
+	}
+	return isHasPrivilage, nil
 }
 
 func (gcp *GCPDriverClient) Close() {
