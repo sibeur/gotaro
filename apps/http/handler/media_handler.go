@@ -27,6 +27,7 @@ func NewMediaHandler(fiberInstance *fiber.App, svc *service.Service) *MediaHandl
 func (h *MediaHandler) Router() {
 	medias := h.fiberInstance.Group("/v1").Group("/medias", middleware.VerifyAuth(h.svc))
 	medias.Post("/:slug", middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope, common.APIClientUploaderScope}), h.uploadMedia)
+	medias.Get("/:slug/:fileAliasName", middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope, common.APIClientUploaderScope}), h.getMedia)
 }
 
 func (h *MediaHandler) findAllMedias(c *fiber.Ctx) error {
@@ -47,6 +48,7 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 
 	file, err := c.FormFile("file")
 	if err != nil {
+		log.Printf("Error uploading file: %v", err)
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
 
@@ -60,6 +62,7 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 	// Open the uploaded file
 	src, err := file.Open()
 	if err != nil {
+		log.Printf("Error opening file: %v", err)
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
 	defer src.Close()
@@ -68,6 +71,7 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 	tempFilePath := common.TemporaryFolder + "/" + file.Filename
 	dst, err := os.Create(tempFilePath)
 	if err != nil {
+		log.Printf("Error creating destination file: %v", err)
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
 	defer dst.Close()
@@ -81,15 +85,33 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 
 	// Copy the uploaded file to the destination file
 	if _, err := io.Copy(dst, src); err != nil {
+		log.Printf("Error copying file: %v", err)
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
 
 	ruleSlug := c.Params("slug")
 
-	url, err := h.svc.Media.Upload(ruleSlug, file.Filename, isCommit)
+	media, err := h.svc.Media.Upload(ruleSlug, file.Filename, isCommit)
+	if err != nil {
+		log.Printf("Error uploading media: %v", err)
+		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
+	}
+
+	return successResponse(c, "", media.ToMediaResult(), nil)
+}
+
+func (h *MediaHandler) getMedia(c *fiber.Ctx) error {
+	ruleSlug := c.Params("slug")
+	fileAliasName := c.Params("fileAliasName")
+
+	media, err := h.svc.Media.FindMedia(ruleSlug, fileAliasName)
 	if err != nil {
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)
 	}
 
-	return successResponse(c, "", common.GotaroMap{"url": url}, nil)
+	if media == nil {
+		return errorResponse(c, fiber.StatusNotFound, common.ErrMediaNotFoundMsg, nil, nil)
+	}
+
+	return successResponse(c, "", media.ToMediaResult(), nil)
 }

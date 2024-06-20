@@ -42,33 +42,58 @@ func (u *DriverService) Create(driver *entity.Driver) error {
 	if err == nil && existingDriver != nil {
 		return errors.New(common.ErrDriverAlreadyExistMsg)
 	}
+	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.GetDriverConfig())
+	if err != nil {
+		return err
+	}
+
+	if err := driverClient.ValidateDriver(); err != nil {
+		return err
+	}
+
+	isPublic, err := driverClient.IsStorageAssetPublic()
+
+	if err != nil {
+		return err
+	}
+
+	driver.IsPublic = isPublic
+
 	err = u.repo.Driver.Create(driver)
 	if err != nil {
 		return err
 	}
-	go u.updateDriverClient(driver.Slug)
+
+	u.DriverManager.AddDriver(driverClient)
 	return nil
 }
 
 func (u *DriverService) Update(driver *entity.Driver) error {
-	err := u.repo.Driver.Update(driver)
+	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.GetDriverConfig())
 	if err != nil {
 		return err
 	}
-	go u.updateDriverClient(driver.Slug)
-	return nil
-}
 
-func (u *DriverService) updateDriverClient(slug string) {
-	driver, err := u.repo.Driver.FindBySlug(slug)
-	if err != nil {
-		log.Printf("Error updating driver: %v", err)
+	if err := driverClient.ValidateDriver(); err != nil {
+		return err
 	}
-	driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driver.GetDriverConfig())
+
+	isPublic, err := driverClient.IsStorageAssetPublic()
+
 	if err != nil {
-		log.Printf("Error updating driver: %v", err)
+		return err
 	}
+
+	driver.IsPublic = isPublic
+
+	err = u.repo.Driver.Update(driver)
+	if err != nil {
+		return err
+	}
+
 	u.DriverManager.AddDriver(driverClient)
+
+	return nil
 }
 
 func (u *DriverService) Delete(slug string) error {
@@ -98,7 +123,8 @@ func (u *DriverService) LoadDriverManager() error {
 		driverConfigJSON := driver.GetDriverConfig()
 		driverClient, err := driver_lib.NewDriverClient(driver.Slug, driver_lib.StorageDriverType(driver.Type), driverConfigJSON)
 		if err != nil {
-			return err
+			log.Printf("Error loading driver: %v \n", err)
+			continue
 		}
 		u.DriverManager.AddDriver(driverClient)
 	}

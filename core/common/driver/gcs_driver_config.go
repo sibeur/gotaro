@@ -40,6 +40,15 @@ func (conf *GCSDriverConfig) ToJSONBytes() ([]byte, error) {
 	return jsonBytes, nil
 }
 
+func (conf *GCSDriverConfig) ToMap() map[string]any {
+	return map[string]any{
+		"project_id":      conf.ProjectID,
+		"bucket_name":     conf.BucketName,
+		"default_folder":  conf.DefaultFolder,
+		"service_account": conf.ServiceAccount,
+	}
+}
+
 func (conf *GCSDriverConfig) ToBSON() (bson.M, error) {
 	jsonBytes, err := conf.ToJSONBytes()
 	if err != nil {

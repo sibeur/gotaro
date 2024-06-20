@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/sibeur/gotaro/core/common"
@@ -21,6 +23,7 @@ type Media struct {
 	FileMime           string    `bson:"file_mime,omitempty" json:"file_mime,omitempty"`
 	FileExt            string    `bson:"file_ext,omitempty" json:"file_ext,omitempty"`
 	IsCommit           bool      `bson:"is_commit,omitempty" json:"is_commit,omitempty"`
+	IsPublic           bool      `bson:"is_public,omitempty" json:"is_public,omitempty"`
 }
 
 func (col *Media) ToJSON() common.GotaroMap {
@@ -53,7 +56,34 @@ func (col *Media) ToJSONSimple() common.GotaroMap {
 		"file_mime":          col.FileMime,
 		"file_ext":           col.FileExt,
 		"is_commit":          col.IsCommit,
+		"is_public":          col.IsPublic,
 	}
+}
+
+func (col *Media) ToMediaResult() common.GotaroMap {
+
+	return common.GotaroMap{
+		"id":               col.ID,
+		"gotaro_file_path": col.GetGotaroFilePath(),
+		"url":              col.FilePath,
+		"is_public":        col.IsPublic,
+	}
+}
+
+func (col *Media) GetGotaroFilePath() string {
+	return fmt.Sprintf("gotaro://%s/%s", col.RuleSlug, col.FileAliasName)
+}
+
+func (col *Media) ToJSONString() (string, error) {
+	data, err := json.Marshal(col)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func (col *Media) FromJSONString(data string) error {
+	return json.Unmarshal([]byte(data), col)
 }
 
 func (col Media) GetCollName() string {
