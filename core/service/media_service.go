@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"log"
+	"strings"
 
 	"github.com/sibeur/gotaro/core/common"
 	driver_lib "github.com/sibeur/gotaro/core/common/driver"
@@ -165,4 +166,58 @@ func (u *MediaService) FindMedia(ruleSlug, fileAliasName string) (*entity.Media,
 		}
 	}
 	return media, nil
+}
+
+func (u *MediaService) FindMediaBatch(mediaPaths []string) common.GotaroMap {
+	uniqueMediaPaths := common.UniqueArrayString(mediaPaths)
+	resultChan := make(chan *entity.Media, len(uniqueMediaPaths))
+	errChan := make(chan error, len(uniqueMediaPaths))
+	for _, mediaPath := range uniqueMediaPaths {
+		go u.asyncFindMedia(mediaPath, resultChan, errChan)
+	}
+	var medias []*entity.Media
+	for i := 0; i < len(uniqueMediaPaths); i++ {
+		if err := <-errChan; err != nil {
+			log.Printf("Error finding media: %v", err)
+			continue
+		}
+		media := <-resultChan
+		if media != nil {
+			medias = append(medias, media)
+		}
+	}
+	response := common.GotaroMap{}
+	for _, media := range medias {
+		mediaResult := media.ToMediaResult()
+		mediaPath := mediaResult["gotaro_file_path"].(string)
+		delete(mediaResult, "gotaro_file_path")
+		response[mediaPath] = mediaResult
+	}
+	return response
+}
+
+func (u *MediaService) asyncFindMedia(mediaPath string, result chan *entity.Media, errChan chan error) {
+	// check mediaPath has "gotaro://" prefix
+
+	if !strings.HasPrefix(mediaPath, "gotaro://") {
+		result <- nil
+		errChan <- nil
+		return
+	}
+	// remove gotaro:// prefix
+	mediaPath = strings.ReplaceAll(mediaPath, "gotaro://", "")
+	//split mediaPath to get rule and fileAliasName
+	splitMediaPath := strings.Split(mediaPath, "/")
+	ruleSlug := splitMediaPath[0]
+	fileAliasName := splitMediaPath[1]
+	// find media
+	media, err := u.FindMedia(ruleSlug, fileAliasName)
+	if err != nil {
+		result <- nil
+		errChan <- err
+		return
+	}
+	result <- media
+	errChan <- nil
+	return
 }
