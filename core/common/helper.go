@@ -137,3 +137,15 @@ func RandomString(n int) string {
 	}
 	return string(b)
 }
+
+func UniqueArrayString(array []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range array {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}

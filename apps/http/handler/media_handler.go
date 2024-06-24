@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/sibeur/gotaro/apps/http/handler/dto"
 	"github.com/sibeur/gotaro/apps/http/handler/middleware"
 	"github.com/sibeur/gotaro/core/common"
 	"github.com/sibeur/gotaro/core/service"
@@ -26,6 +27,7 @@ func NewMediaHandler(fiberInstance *fiber.App, svc *service.Service) *MediaHandl
 
 func (h *MediaHandler) Router() {
 	medias := h.fiberInstance.Group("/v1").Group("/medias", middleware.VerifyAuth(h.svc))
+	medias.Post("/get-batch", h.getMediaBatch)
 	medias.Post("/:slug", middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope, common.APIClientUploaderScope}), h.uploadMedia)
 	medias.Get("/:slug/:fileAliasName", middleware.VerifyAuthAudiences([]string{common.APIClientSuperAdminScope, common.APIClientUploaderScope}), h.getMedia)
 }
@@ -114,4 +116,21 @@ func (h *MediaHandler) getMedia(c *fiber.Ctx) error {
 	}
 
 	return successResponse(c, "", media.ToMediaResult(), nil)
+}
+
+func (h *MediaHandler) getMediaBatch(c *fiber.Ctx) error {
+	mediaData := new(dto.GetMediaBatchDTO)
+
+	if err := c.BodyParser(mediaData); err != nil {
+		return errorResponse(c, fiber.StatusBadRequest, err.Error(), nil, nil)
+	}
+
+	fValidator := common.NewFiberValidator()
+
+	if errs := fValidator.Validate(mediaData); len(errs) > 0 {
+		return errorResponse(c, fiber.StatusBadRequest, common.ErrValidationMsg, errs, nil)
+	}
+
+	medias := h.svc.Media.FindMediaBatch(mediaData.Files)
+	return successResponse(c, "", medias, nil)
 }
