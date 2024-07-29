@@ -21,7 +21,7 @@ type GCPDriverClientUseCase interface {
 	GetClient() *storage.Client
 	GetDriverConfig() *GCSDriverConfig
 	GetObjectNames() ([]string, error)
-	UploadFile(filePath string, targetFilePath string) (string, error)
+	UploadFile(filePath string, targetFilePath string, opts ...*UploadFileOpts) (string, error)
 	GetSignedUrl(filePath string) (string, error)
 	IsStorageAssetPublic() (bool, error)
 	IsStorageBucketExist() (bool, error)
@@ -81,7 +81,13 @@ func (gcp *GCPDriverClient) GetObjectNames() ([]string, error) {
 	return objects, nil
 }
 
-func (gcp *GCPDriverClient) UploadFile(filePath string, targetFilePath string) (string, error) {
+func (gcp *GCPDriverClient) UploadFile(filePath string, targetFilePath string, opts ...*UploadFileOpts) (string, error) {
+	opt := &UploadFileOpts{}
+
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
+
 	client := gcp.client
 
 	bucketName := gcp.driverConfig.BucketName
@@ -95,6 +101,9 @@ func (gcp *GCPDriverClient) UploadFile(filePath string, targetFilePath string) (
 	ctx := context.Background()
 	obj := client.Bucket(bucketName).Object(targetFilePath)
 	wc := obj.NewWriter(ctx)
+	if opt.Mime != "" {
+		wc.ContentType = opt.Mime
+	}
 	if _, err := io.Copy(wc, file); err != nil {
 		return "", err
 	}

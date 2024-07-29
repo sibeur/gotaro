@@ -10,3 +10,7 @@ const (
 var AllowedDrivers []StorageDriverType = []StorageDriverType{
 	GCSDriverType,
 }
+
+type UploadFileOpts struct {
+	Mime string
+}

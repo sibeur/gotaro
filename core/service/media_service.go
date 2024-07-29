@@ -89,7 +89,10 @@ func (u *MediaService) Upload(ruleSlug, fileName string, isCommit bool) (*entity
 
 	filePathFromDriver := driver.GetFilePathFromDriver(targetFilePath)
 
-	mediaLink, err := driverClient.UploadFile(tempFilePath, targetFilePath)
+	uploadOpts := &driver_lib.UploadFileOpts{
+		Mime: fileMetaData.FileMime,
+	}
+	mediaLink, err := driverClient.UploadFile(tempFilePath, targetFilePath, uploadOpts)
 	if err != nil {
 		log.Printf("Error uploading file: %v", err)
 		return nil, err

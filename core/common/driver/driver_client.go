@@ -11,7 +11,7 @@ type DriverClientUseCase interface {
 	GetType() StorageDriverType
 	GetTypeString() string
 	GetDriver() any
-	UploadFile(filePath string, targetFilePath string) (string, error)
+	UploadFile(filePath string, targetFilePath string, opts ...*UploadFileOpts) (string, error)
 	GetSignedUrl(filePath string) (string, error)
 	IsStorageAssetPublic() (bool, error)
 	IsStorageBucketExist() (bool, error)
@@ -73,10 +73,10 @@ func (dc *DriverClient) GetDriver() any {
 	return dc.driver
 }
 
-func (dc *DriverClient) UploadFile(tempFilePath string, targetFilePath string) (string, error) {
+func (dc *DriverClient) UploadFile(tempFilePath string, targetFilePath string, opts ...*UploadFileOpts) (string, error) {
 	switch dc.driverType {
 	case GCSDriverType:
-		return dc.driver.(GCPDriverClientUseCase).UploadFile(tempFilePath, targetFilePath)
+		return dc.driver.(GCPDriverClientUseCase).UploadFile(tempFilePath, targetFilePath, opts...)
 	}
 
 	return "", nil
