@@ -19,11 +19,17 @@ type Media struct {
 	FilePathFromDriver string    `bson:"file_path_from_driver,omitempty" json:"file_path_from_driver,omitempty"`
 	FileOriginalName   string    `bson:"file_original_name,omitempty" json:"file_original_name,omitempty"`
 	FileAliasName      string    `bson:"file_alias_name,omitempty" json:"file_alias_name,omitempty"`
+	FileDirectory      string    `bson:"file_directory,omitempty" json:"file_directory,omitempty"`
 	FileSize           uint64    `bson:"file_size,omitempty" json:"file_size,omitempty"`
 	FileMime           string    `bson:"file_mime,omitempty" json:"file_mime,omitempty"`
 	FileExt            string    `bson:"file_ext,omitempty" json:"file_ext,omitempty"`
 	IsCommit           bool      `bson:"is_commit,omitempty" json:"is_commit,omitempty"`
 	IsPublic           bool      `bson:"is_public,omitempty" json:"is_public,omitempty"`
+}
+
+type MediaUploadOpts struct {
+	IsCommit  bool
+	Directory string
 }
 
 func (col *Media) ToJSON() common.GotaroMap {

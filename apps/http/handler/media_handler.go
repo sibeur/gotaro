@@ -8,6 +8,7 @@ import (
 	"github.com/sibeur/gotaro/apps/http/handler/dto"
 	"github.com/sibeur/gotaro/apps/http/handler/middleware"
 	"github.com/sibeur/gotaro/core/common"
+	"github.com/sibeur/gotaro/core/entity"
 	"github.com/sibeur/gotaro/core/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -61,6 +62,13 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 		isCommit = true
 	}
 
+	directory := c.FormValue("directory")
+
+	mediaOpts := &entity.MediaUploadOpts{
+		IsCommit:  isCommit,
+		Directory: directory,
+	}
+
 	// Open the uploaded file
 	src, err := file.Open()
 	if err != nil {
@@ -93,7 +101,7 @@ func (h *MediaHandler) uploadMedia(c *fiber.Ctx) error {
 
 	ruleSlug := c.Params("slug")
 
-	media, err := h.svc.Media.Upload(ruleSlug, file.Filename, isCommit)
+	media, err := h.svc.Media.Upload(ruleSlug, file.Filename, mediaOpts)
 	if err != nil {
 		log.Printf("Error uploading media: %v", err)
 		return errorResponse(c, fiber.StatusInternalServerError, err.Error(), nil, nil)

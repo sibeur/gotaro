@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
@@ -29,8 +30,13 @@ func (u *MediaService) FindAll() ([]*entity.Media, error) {
 	return result, nil
 }
 
-func (u *MediaService) Upload(ruleSlug, fileName string, isCommit bool) (*entity.Media, error) {
+func (u *MediaService) Upload(ruleSlug, fileName string, opts ...*entity.MediaUploadOpts) (*entity.Media, error) {
 	tempFilePath := common.TemporaryFolder + "/" + fileName
+
+	opt := &entity.MediaUploadOpts{}
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
 
 	rule, err := u.repo.Rule.FindBySlug(ruleSlug)
 	if err != nil {
@@ -82,10 +88,20 @@ func (u *MediaService) Upload(ruleSlug, fileName string, isCommit bool) (*entity
 	}
 
 	folder := driver.GetDefaultFolder()
+	if opt.Directory != "" {
+		fmt.Println("opt.Directory", opt.Directory)
+		optDirectory := strings.Trim(opt.Directory, " ")
+		optDirectory = strings.Trim(optDirectory, "")
+		optDirectory = strings.Trim(optDirectory, "/")
+		folder = optDirectory
+	}
+	fmt.Println("folder", folder)
 	targetFilePath := folder + "/" + fileAliasName
 	if folder == "/" {
 		targetFilePath = fileAliasName
 	}
+
+	fileAliasName = targetFilePath
 
 	filePathFromDriver := driver.GetFilePathFromDriver(targetFilePath)
 
@@ -110,7 +126,8 @@ func (u *MediaService) Upload(ruleSlug, fileName string, isCommit bool) (*entity
 		FileSize:           fileMetaData.FileSize,
 		FilePath:           mediaLink,
 		FilePathFromDriver: filePathFromDriver,
-		IsCommit:           isCommit,
+		FileDirectory:      folder,
+		IsCommit:           opt.IsCommit,
 		IsPublic:           isPublic,
 	}
 	err = u.repo.Media.Create(&media)
@@ -212,7 +229,7 @@ func (u *MediaService) asyncFindMedia(mediaPath string, result chan *entity.Medi
 	//split mediaPath to get rule and fileAliasName
 	splitMediaPath := strings.Split(mediaPath, "/")
 	ruleSlug := splitMediaPath[0]
-	fileAliasName := splitMediaPath[1]
+	fileAliasName := strings.Join(splitMediaPath[1:], "/")
 	// find media
 	media, err := u.FindMedia(ruleSlug, fileAliasName)
 	if err != nil {
